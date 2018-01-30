@@ -4,7 +4,19 @@
 import time
 
 from channel_extract_me import sortItemUrl
+from channel_extract_me import sortItemDetail
+
+
+def getSortItemUrlCount():
+    print(sortItemUrl.find().count())
+    time.sleep(5)
+
+
+def getsortItemDetailCount():
+    print(sortItemDetail.find().count())
+    time.sleep(5)
+
 
 while True:
-    print(sortItemUrl.find().count())
-    time.sleep(6)
+    getsortItemDetailCount()
+    # getSortItemUrlCount()

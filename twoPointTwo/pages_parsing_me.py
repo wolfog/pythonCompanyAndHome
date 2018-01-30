@@ -2,9 +2,10 @@
 # _authur_ = 'wolfog'
 # purpose：两个任务。一：根据sort地址，拿到本大类下所有的商品的url,像代码那样，这个类就封装成一个方法，比较清晰
 # (http://bj.58.com/shouji/pn30/)。
-
+from multiprocessing.pool import Pool
 
 import requests
+import time
 from bs4 import BeautifulSoup
 from channel_extract_me import sortItemUrl
 from channel_extract_me import sortItemDetail
@@ -18,16 +19,13 @@ def getAllUrlOfSort(sortUrl):
         sortItemUrl.insert_one({"sortItem": item.get('href')})
 
 
-if __name__ == '__main__':  # 58的格式关于title的都不一样，难道还要分情况讨论
-    for sortItem in sortItemUrl.find().limit(20):  # 经过分析url地址有两种格式。跳到转转和跳到58同城。需要分开讨论。
-        resq = requests.get(sortItem['sortItem'])
+def getDetail(
+        url):  # 总共有359个是58同城的地址，所以很可能会出现359个请求不到消息的地址，42336正常                        # 经过分析url地址有两种格式。跳到转转和跳到58同城。需要分开讨论。
+    time.sleep(1)
+    try:
+        resq = requests.get(url)
         soup = BeautifulSoup(resq.text, 'lxml')
-        titles = []
-        prices = []
-        dates = []
-        areas = []
-        urls = []
-        if "//zhuanzhuan" in sortItem['sortItem']:  # 转转的地址
+        if "//zhuanzhuan" in url:  # 转转的地址
             titles = soup.select('div.box_left_top > h1')
             prices = soup.select('span.price_now > i')
             scanNums = soup.select('p.info_p > span.look_time')
@@ -48,9 +46,20 @@ if __name__ == '__main__':  # 58的格式关于title的都不一样，难道还�
                 areas.append(item.getText())
             for itemUrl in urlSource:
                 urls.append(itemUrl.get('src'))
+        for title, price, scanNum, area, url in zip(titles, prices, scanNums, areas, urls):
+            print({'title': title.getText(), 'price': price.getText(), 'scanNum': scanNum.getText(),
+                   'area': area.getText(), 'url': url, 'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())})
+            sortItemDetail.insert_one(
+                {'title': title.getText(), 'price': price.getText(), 'scanNum': scanNum.getText(),
+                 'area': area.getText(), 'url': url, 'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())})
+    except Exception:
+        with open('exception.txt', 'a') as file:
+            file.write(url + '\n')
 
-        print(titles, prices, scanNums, areas, urls)
-        # for title, price, scanNum, area, url in zip(titles, prices, scanNums, areas, urls):
-        #     print({'title': title.get_text(), 'price': price.get_text(), 'scanNum': scanNum.get_text(),
-        #        'area': area.get_text(), 'url': url})
-        # sortItemDetail.insert_one({'title': title.getText(), 'price': price.getText(), 'scanNum': scanNum.getText(), 'area': area.getText(), 'url': url.getText()})
+
+if __name__ == '__main__':  # 58的格式关于title的都不一样，难道还要分情况讨论
+    pool = Pool()
+    urlLists = []
+    for sortItem in sortItemUrl.find():
+        urlLists.append(sortItem['sortItem'])
+    pool.map(getDetail, urlLists)
