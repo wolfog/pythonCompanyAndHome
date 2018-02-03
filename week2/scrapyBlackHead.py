@@ -71,7 +71,7 @@ def get_json(url, params, encSecKey):
 
 if __name__ == "__main__":
     url = "http://music.163.com/weapi/v1/resource/comments/R_SO_4_357312?csrf_token="
-    params = get_params();
+    params = get_params()
     encSecKey = get_encSecKey()
     json_text = get_json(url, params, encSecKey)
     print(json_text)
@@ -79,3 +79,4 @@ if __name__ == "__main__":
     print(json_dict['total'])
     for item in json_dict['comments']:
         print(item['content'].encode('gbk', 'ignore'))
+#

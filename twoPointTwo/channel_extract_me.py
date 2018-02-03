@@ -5,6 +5,7 @@
 from bs4 import BeautifulSoup
 import requests
 import pymongo
+
 client = pymongo.MongoClient("localhost", 27017)
 db = client['58']
 sortUrl = db['sortUrl']
@@ -12,7 +13,6 @@ sortItemUrl = db['sortItemUrl']
 sortItemDetail = db['sortItemDetail']
 start_url = 'http://bj.58.com/sale.shtml'
 url_host = 'http://bj.58.com'
-
 
 def getSort():
     resq = requests.get(start_url)
