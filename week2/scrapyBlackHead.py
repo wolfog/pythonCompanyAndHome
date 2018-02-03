@@ -51,8 +51,6 @@ def AES_encrypt(text, key, iv):
     encrypt_text = encryptor.encrypt(text)
     encrypt_text = base64.b64encode(encrypt_text)
     return encrypt_text
-
-
 data = {
     'params': "",
     'encSecKey': ""
